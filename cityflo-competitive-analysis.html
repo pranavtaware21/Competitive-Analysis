@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cityflo — Operations Competitive Analysis (City-wise)</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #242836;
+    --border: #2e3345;
+    --text: #e4e6ef;
+    --text-dim: #8b8fa3;
+    --accent: #6366f1;
+    --accent-light: #818cf8;
+    --green: #34d399;
+    --green-bg: rgba(52,211,153,.1);
+    --red: #f87171;
+    --red-bg: rgba(248,113,113,.1);
+    --yellow: #fbbf24;
+    --yellow-bg: rgba(251,191,36,.1);
+    --blue: #60a5fa;
+    --blue-bg: rgba(96,165,250,.1);
+    --orange: #fb923c;
+    --orange-bg: rgba(251,146,60,.1);
+    --purple: #a78bfa;
+    --purple-bg: rgba(167,139,250,.1);
+    --pink: #f472b6;
+    --pink-bg: rgba(244,114,182,.1);
+    --cyan: #22d3ee;
+    --cyan-bg: rgba(34,211,238,.1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 2rem;
+  }
+
+  .container { max-width: 1500px; margin: 0 auto; }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding: 2.5rem 2rem;
+    background: linear-gradient(135deg, #1e1b4b 0%, #1a1d27 100%);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+  }
+  .header h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent-light), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: .5rem;
+  }
+  .header p { color: var(--text-dim); font-size: 1rem; }
+  .header .date { color: var(--text-dim); font-size: .85rem; margin-top: .75rem; opacity: .7; }
+  .header .segments {
+    display: flex;
+    justify-content: center;
+    gap: .75rem;
+    margin-top: 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  /* Section Titles */
+  .section-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 2.5rem 0 1.25rem;
+    padding-bottom: .5rem;
+    border-bottom: 2px solid var(--accent);
+    display: inline-block;
+  }
+  .sub-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 1.75rem 0 1rem;
+    color: var(--text);
+  }
+
+  /* Cards Grid */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.25rem; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: border-color .2s;
+  }
+  .card:hover { border-color: var(--accent); }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: .5rem;
+  }
+  .card-header h3 { font-size: 1.1rem; font-weight: 700; }
+
+  .badge {
+    font-size: .65rem;
+    font-weight: 600;
+    padding: .2rem .55rem;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    white-space: nowrap;
+  }
+  .badge-green { background: var(--green-bg); color: var(--green); }
+  .badge-red { background: var(--red-bg); color: var(--red); }
+  .badge-yellow { background: var(--yellow-bg); color: var(--yellow); }
+  .badge-blue { background: var(--blue-bg); color: var(--blue); }
+  .badge-orange { background: var(--orange-bg); color: var(--orange); }
+  .badge-purple { background: var(--purple-bg); color: var(--purple); }
+  .badge-pink { background: var(--pink-bg); color: var(--pink); }
+  .badge-cyan { background: var(--cyan-bg); color: var(--cyan); }
+
+  .card-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .5rem;
+    margin-bottom: .75rem;
+  }
+  .meta-item { font-size: .82rem; }
+  .meta-label { color: var(--text-dim); font-size: .65rem; text-transform: uppercase; letter-spacing: .5px; }
+  .meta-value { font-weight: 600; margin-top: .1rem; }
+
+  .card-desc { font-size: .82rem; color: var(--text-dim); line-height: 1.55; }
+
+  /* Comparison Table */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    margin: 1rem 0;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .82rem;
+  }
+  thead { background: var(--surface2); }
+  th {
+    padding: .75rem .85rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    font-size: .65rem;
+    letter-spacing: .5px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  td {
+    padding: .65rem .85rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: rgba(99,102,241,.04); }
+
+  .highlight-row { background: rgba(99,102,241,.06); }
+  .highlight-row td:first-child { font-weight: 700; color: var(--accent-light); }
+
+  /* SWOT */
+  .swot-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin: 1rem 0;
+  }
+  .swot-box {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+  }
+  .swot-box h4 {
+    font-size: .82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: .65rem;
+  }
+  .swot-box ul { list-style: none; padding: 0; }
+  .swot-box li {
+    font-size: .78rem;
+    padding: .3rem 0;
+    padding-left: 1rem;
+    position: relative;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+  .swot-box li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: .6rem;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+  }
+  .swot-s h4 { color: var(--green); }
+  .swot-s li::before { background: var(--green); }
+  .swot-w h4 { color: var(--red); }
+  .swot-w li::before { background: var(--red); }
+  .swot-o h4 { color: var(--blue); }
+  .swot-o li::before { background: var(--blue); }
+  .swot-t h4 { color: var(--orange); }
+  .swot-t li::before { background: var(--orange); }
+
+  /* Cost Cards */
+  .cost-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 1.25rem;
+    margin: 1rem 0;
+  }
+  .cost-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+  }
+  .cost-card h4 {
+    font-size: .9rem;
+    font-weight: 700;
+    margin-bottom: .75rem;
+    color: var(--accent-light);
+  }
+  .cost-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .4rem 0;
+    border-bottom: 1px solid rgba(46,51,69,.5);
+    font-size: .78rem;
+  }
+  .cost-item:last-child { border-bottom: none; }
+  .cost-label { color: var(--text-dim); }
+  .cost-value { font-weight: 600; }
+
+  /* Bar chart */
+  .bar-chart { margin: 1rem 0; }
+  .bar-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: .6rem;
+    gap: .75rem;
+  }
+  .bar-label {
+    width: 110px;
+    font-size: .78rem;
+    font-weight: 600;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .bar-track {
+    flex: 1;
+    height: 26px;
+    background: var(--surface2);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: .6rem;
+    font-size: .68rem;
+    font-weight: 700;
+    color: #fff;
+    min-width: fit-content;
+    padding-left: .5rem;
+  }
+
+  /* Insights */
+  .insight-box {
+    background: linear-gradient(135deg, rgba(99,102,241,.08), rgba(167,139,250,.05));
+    border: 1px solid rgba(99,102,241,.2);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin: 1rem 0;
+  }
+  .insight-box h4 {
+    color: var(--accent-light);
+    font-size: .9rem;
+    margin-bottom: .5rem;
+  }
+  .insight-box p {
+    font-size: .82rem;
+    color: var(--text-dim);
+    line-height: 1.65;
+  }
+
+  /* City Section */
+  .city-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.75rem;
+    margin: 1.25rem 0;
+  }
+  .city-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+  }
+  .city-header h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+  .city-status {
+    display: flex;
+    gap: .5rem;
+    flex-wrap: wrap;
+  }
+
+  .segment-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  .segment-box {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 1rem;
+    border: 1px solid var(--border);
+  }
+  .segment-box h5 {
+    font-size: .78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: .65rem;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+  }
+  .segment-box .competitors {
+    font-size: .75rem;
+    color: var(--text-dim);
+  }
+  .segment-box .competitor-item {
+    padding: .35rem 0;
+    border-bottom: 1px dashed rgba(46,51,69,.7);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: .5rem;
+  }
+  .segment-box .competitor-item:last-child { border-bottom: none; }
+  .comp-name { font-weight: 600; color: var(--text); }
+  .comp-detail { font-size: .7rem; color: var(--text-dim); text-align: right; }
+  .cityflo-row { background: rgba(99,102,241,.08); padding: .35rem .5rem; border-radius: 6px; margin: -.1rem -.5rem; }
+
+  /* Note */
+  .note {
+    background: var(--yellow-bg);
+    border-left: 3px solid var(--yellow);
+    border-radius: 0 8px 8px 0;
+    padding: .85rem 1rem;
+    margin: .75rem 0;
+    font-size: .78rem;
+    color: var(--yellow);
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: .4rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+  .tab-btn {
+    padding: .45rem 1rem;
+    border-radius: 8px;
+    font-size: .78rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-dim);
+    transition: all .2s;
+  }
+  .tab-btn:hover, .tab-btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .footer {
+    text-align: center;
+    padding: 2rem;
+    margin-top: 3rem;
+    color: var(--text-dim);
+    font-size: .72rem;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Segment legend */
+  .segment-legend {
+    display: flex;
+    gap: 1.5rem;
+    margin: 1rem 0;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    font-size: .78rem;
+    color: var(--text-dim);
+  }
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+  }
+
+  @media (max-width: 900px) {
+    body { padding: 1rem; }
+    .header h1 { font-size: 1.4rem; }
+    .swot-grid { grid-template-columns: 1fr; }
+    .cards { grid-template-columns: 1fr; }
+    .segment-grid { grid-template-columns: 1fr; }
+    .bar-label { width: 80px; font-size: .7rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ============================================ -->
+  <!-- HEADER -->
+  <!-- ============================================ -->
+  <div class="header">
+    <h1>Cityflo — Operations Competitive Analysis</h1>
+    <p>City-wise Breakdown &middot; B2C Bus + B2B Corporate + Cab Segments</p>
+    <div class="segments">
+      <span class="badge badge-blue" style="font-size:.75rem; padding:.3rem .8rem;">B2C Premium Bus</span>
+      <span class="badge badge-purple" style="font-size:.75rem; padding:.3rem .8rem;">B2B Corporate Transport</span>
+      <span class="badge badge-cyan" style="font-size:.75rem; padding:.3rem .8rem;">Cab Segment</span>
+    </div>
+    <div class="date">Prepared: March 2026 &middot; Data as of FY25 &middot; Sources: Tracxn, Crunchbase, PitchBook, Company Disclosures</div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- SECTION 1: CITYFLO OVERVIEW — 3 SEGMENTS -->
+  <!-- ============================================ -->
+  <h2 class="section-title">1. Cityflo — Three Business Segments</h2>
+
+  <div class="cards" style="grid-template-columns: repeat(3, 1fr);">
+
+    <div class="card" style="border-top: 3px solid var(--blue);">
+      <div class="card-header">
+        <h3>B2C — Premium Bus Commute</h3>
+        <span class="badge badge-blue">Core Business</span>
+      </div>
+      <div class="card-meta">
+        <div class="meta-item"><div class="meta-label">Model</div><div class="meta-value">Pay-per-seat, subscription</div></div>
+        <div class="meta-item"><div class="meta-label">Fleet</div><div class="meta-value">450+ buses</div></div>
+        <div class="meta-item"><div class="meta-label">Avg Ticket</div><div class="meta-value">₹150–300/ride</div></div>
+        <div class="meta-item"><div class="meta-label">Users Served</div><div class="meta-value">2.5M+ professionals</div></div>
+      </div>
+      <div class="card-desc">App-based AC bus rides for daily office commute. Asset-light operator partnerships. AI-optimized routes. Includes B2G expansion via Urban Glide (500 EV buses).</div>
+    </div>
+
+    <div class="card" style="border-top: 3px solid var(--purple);">
+      <div class="card-header">
+        <h3>B2B — Corporate Transport</h3>
+        <span class="badge badge-purple">Growth Engine</span>
+      </div>
+      <div class="card-meta">
+        <div class="meta-item"><div class="meta-label">Products</div><div class="meta-value">Cityflo Corporate + LUXE</div></div>
+        <div class="meta-item"><div class="meta-label">Clients</div><div class="meta-value">30+ enterprises</div></div>
+        <div class="meta-item"><div class="meta-label">Model</div><div class="meta-value">Pay-per-seat, managed</div></div>
+        <div class="meta-item"><div class="meta-label">Key Clients</div><div class="meta-value">ICICI, Pfizer, Tata, L'Oreal</div></div>
+      </div>
+      <div class="card-desc">End-to-end employee transport for corporates. Includes home-to-office buses, first/last mile metro connectivity. Competes with MoveInSync, Routematic, WhistleDrive.</div>
+    </div>
+
+    <div class="card" style="border-top: 3px solid var(--cyan);">
+      <div class="card-header">
+        <h3>Cab Segment</h3>
+        <span class="badge badge-cyan">Expanding</span>
+      </div>
+      <div class="card-meta">
+        <div class="meta-item"><div class="meta-label">Model</div><div class="meta-value">Corporate cabs / on-demand</div></div>
+        <div class="meta-item"><div class="meta-label">Segment</div><div class="meta-value">Employee + premium rides</div></div>
+        <div class="meta-item"><div class="meta-label">Competitors</div><div class="meta-value">Ola, Uber, Lithium, MiS</div></div>
+        <div class="meta-item"><div class="meta-label">Differentiator</div><div class="meta-value">Integrated with bus + B2B</div></div>
+      </div>
+      <div class="card-desc">Cab services for corporate employee commute and premium rides. Complements the bus segment with first/last-mile and ad-hoc travel. Competes with ride-hailing giants and EV fleet operators.</div>
+    </div>
+
+  </div>
+
+  <!-- ============================================ -->
+  <!-- SECTION 2: KEY COMPETITORS OVERVIEW -->
+  <!-- ============================================ -->
+  <h2 class="section-title">2. Key Competitors — All Segments</h2>
+
+  <div class="segment-legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blue);"></div>B2C Bus</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--purple);"></div>B2B Corporate</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--cyan);"></div>Cab</div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>Segments</th>
+          <th>Revenue (Latest)</th>
+          <th>Funding</th>
+          <th>Fleet/Scale</th>
+          <th>Cities</th>
+          <th>Key Strength</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td>Cityflo</td>
+          <td><span class="badge badge-blue">B2C</span> <span class="badge badge-purple">B2B</span> <span class="badge badge-cyan">Cab</span></td>
+          <td>₹83.4 Cr (FY25)</td>
+          <td>$14.7M</td>
+          <td>450+ buses</td>
+          <td>MUM, DEL, HYD, PUN, CHN → KOL, BLR</td>
+          <td>Asset-light + AI routes + capital efficiency</td>
+        </tr>
+        <tr>
+          <td><strong>MoveInSync</strong></td>
+          <td><span class="badge badge-purple">B2B</span> <span class="badge badge-cyan">Cab</span></td>
+          <td>₹548 Cr (FY25)</td>
+          <td>Undisclosed</td>
+          <td>9,500+ vehicles, 925+ EVs</td>
+          <td>Pan-India, 39 countries</td>
+          <td>Largest B2B transport SaaS. 400+ clients incl. 112 Fortune 500</td>
+        </tr>
+        <tr>
+          <td><strong>Routematic</strong></td>
+          <td><span class="badge badge-purple">B2B</span> <span class="badge badge-cyan">Cab</span></td>
+          <td>₹179 Cr (FY25)</td>
+          <td>$40M+ (May 2025)</td>
+          <td>10K+ vehicles planned by Mar '26</td>
+          <td>BLR, PUN, DEL, CHN, HYD</td>
+          <td>Fresh $40M funding. Aggressive fleet expansion</td>
+        </tr>
+        <tr>
+          <td><strong>Chalo + Shuttl</strong></td>
+          <td><span class="badge badge-blue">B2C</span></td>
+          <td>~₹145 Cr (FY24)</td>
+          <td>$176M</td>
+          <td>15,000+ buses tracked</td>
+          <td>51 cities, 3 countries</td>
+          <td>Massive scale. Public transit digitization. Smart cards</td>
+        </tr>
+        <tr>
+          <td><strong>Lithium Urban</strong></td>
+          <td><span class="badge badge-purple">B2B</span> <span class="badge badge-cyan">Cab</span></td>
+          <td>₹163 Cr (FY24)</td>
+          <td>$25M+</td>
+          <td>2,400+ EVs, 1,325 charging points</td>
+          <td>15+ cities</td>
+          <td>India's largest B2B EV fleet. Captive charging infra</td>
+        </tr>
+        <tr>
+          <td><strong>WhistleDrive</strong></td>
+          <td><span class="badge badge-purple">B2B</span> <span class="badge badge-cyan">Cab</span></td>
+          <td>₹47.5 Cr (FY24)</td>
+          <td>$11.8M</td>
+          <td>Cabs + Buses + Car Rentals</td>
+          <td>HYD focus + Pan-India</td>
+          <td>Full-stack: cabs, buses, executive rentals. 200+ brands</td>
+        </tr>
+        <tr>
+          <td><strong>NueGo</strong></td>
+          <td><span class="badge badge-blue">B2C</span></td>
+          <td>₹291 Cr (FY25)</td>
+          <td>Unfunded (GreenCell)</td>
+          <td>300+ EV buses, 600+ departures/day</td>
+          <td>120+ cities (intercity)</td>
+          <td>100% EV. Dominant intercity premium bus brand</td>
+        </tr>
+        <tr>
+          <td><strong>Ola / Uber</strong></td>
+          <td><span class="badge badge-cyan">Cab</span></td>
+          <td>₹2,800 Cr+ / ₹3,500 Cr+ (India)</td>
+          <td>$Billions</td>
+          <td>Millions of drivers</td>
+          <td>All major cities</td>
+          <td>Massive user base, brand, last-mile dominance</td>
+        </tr>
+        <tr>
+          <td><strong>Safetrax</strong></td>
+          <td><span class="badge badge-purple">B2B</span></td>
+          <td>₹15.8 Cr (FY24)</td>
+          <td>$2M+</td>
+          <td>SaaS only (no fleet)</td>
+          <td>Pan-India (160+ enterprises)</td>
+          <td>Pure SaaS for employee transport automation</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="insight-box">
+    <h4>Competitive Landscape Summary</h4>
+    <p><strong>B2C Bus:</strong> Cityflo's direct competitors (Chalo/Shuttl, rBus) are either much larger but in public transit (Chalo) or much smaller/niche (rBus). Cityflo owns the premium commute niche. <strong>B2B Corporate:</strong> This is the bloodiest battleground — MoveInSync (₹548 Cr!) and Routematic (₹179 Cr, fresh $40M) are well-funded incumbents. Cityflo's B2B is subscale compared to them. <strong>Cab:</strong> Dominated by Ola/Uber for consumer; Lithium Urban leads corporate EV cabs. Cityflo's advantage is bundling cab + bus in one platform for corporates.</p>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- SECTION 3: CITY-WISE COMPETITIVE LANDSCAPE -->
+  <!-- ============================================ -->
+  <h2 class="section-title">3. City-wise Competitive Landscape</h2>
+
+  <!-- MUMBAI -->
+  <div class="city-section" style="border-left: 4px solid var(--green);">
+    <div class="city-header">
+      <h3>Mumbai (MMR)</h3>
+      <div class="city-status">
+        <span class="badge badge-green">Cityflo HQ &middot; Strongest Market</span>
+        <span class="badge badge-blue">B2C</span>
+        <span class="badge badge-purple">B2B</span>
+        <span class="badge badge-cyan">Cab</span>
+      </div>
+    </div>
+
+    <div class="segment-grid">
+      <div class="segment-box">
+        <h5 style="color:var(--blue);">B2C — Premium Bus</h5>
+        <div class="competitors">
+          <div class="competitor-item cityflo-row"><span class="comp-name" style="color:var(--accent-light);">Cityflo</span><span class="comp-detail">Dominant. 450+ buses, deepest routes</span></div>
+          <div class="competitor-item"><span class="comp-name">Chalo Premium</span><span class="comp-detail">AC buses, lower price tier</span></div>
+          <div class="competitor-item"><span class="comp-name">rBus</span><span class="comp-detail">12 routes, small scale</span></div>
+          <div class="competitor-item"><span class="comp-name">BEST AC / EV</span><span class="comp-detail">Govt. 2,100 EV buses incoming (Olectra)</span></div>
+          <div class="competitor-item"><span class="comp-name">Urban Glide (Cityflo JV)</span><span class="comp-detail">500 EV buses in MMR, B2G</span></div>
+        </div>
+      </div>
+      <div class="segment-box">
+        <h5 style="color:var(--purple);">B2B — Corporate Transport</h5>
+        <div class="competitors">
+          <div class="competitor-item cityflo-row"><span class="comp-name" style="color:var(--accent-light);">Cityflo Corporate / LUXE</span><span class="comp-detail">30+ clients, pay-per-seat</span></div>
+          <div class="competitor-item"><span class="comp-name">MoveInSync</span><span class="comp-detail">₹548 Cr rev. Wipro, TCS etc.</span></div>
+          <div class="competitor-item"><span class="comp-name">Routematic</span><span class="comp-detail">₹179 Cr. Aggressive expansion</span></div>
+          <div class="competitor-item"><span class="comp-name">Lithium Urban</span><span class="comp-detail">EV fleet leader, 2400+ EVs</span></div>
+          <div class="competitor-item"><span class="comp-name">Sushma / KTC</span><span class="comp-detail">Unorganized fleet operators</span></div>
+        </div>
+      </div>
+      <div class="segment-box">
+        <h5 style="color:var(--cyan);">Cab Segment</h5>
+        <div class="competitors">
+          <div class="competitor-item cityflo-row"><span class="comp-name" style="color:var(--accent-light);">Cityflo Cab</span><span class="comp-detail">Corporate + first/last mile</span></div>
+          <div class="competitor-item"><span class="comp-name">Ola</span><span class="comp-detail">Market leader. Massive base</span></div>
+          <div class="competitor-item"><span class="comp-name">Uber</span><span class="comp-detail">Premium + corporate tier</span></div>
+          <div class="competitor-item"><span class="comp-name">Lithium Urban</span><span class="comp-detail">B2B EV cabs</span></div>
+          <div class="competitor-item"><span class="comp-name">MoveInSync (cab)</span><span class="comp-detail">Home-to-office cabs for corporates</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="insight-box" style="margin-top:1rem;">
+      <h4>Mumbai Assessment</h4>
+      <p>Cityflo's strongest city. Premium commute brand is established — main B2C risk is BEST's 2,100 EV buses (Olectra) improving public transit quality. B2B is competitive with MoveInSync/Routematic but Cityflo's bus+cab bundle is unique. Urban Glide gives B2G foothold. <strong>Moat: Strong.</strong></p>
+    </div>
+  </div>
+
+  <!-- DELHI NCR -->
+  <div class="city-section" style="border-left: 4px solid var(--blue);">
+    <div class="city-header">
+      <h3>Delhi NCR</h3>
+      <div class="city-status">
+        <span class="badge badge-blue">Active</span>
+        <span class="badge badge-blue">B2C</span>
+        <span class="badge badge-purple">B2B</span>
+        <span class="badge badge-cyan">Cab</span>
+      </div>
+    </div>
+
+    <div class="segment-grid">
+      <div class="segment-box">
+        <h5 style="color:var(--blue);">B2C — Premium Bus</h5>
+        <div class="competitors">
+          <div class="competitor-item cityflo-row"><span class="comp-name" style="color:var(--accent-light);">Cityflo</span><span class="comp-detail">Growing. EV buses via Aaveg</span></div>
+          <div class="competitor-item"><span class="comp-name">Shuttl (Chalo)</span><span class="comp-detail">NCR origin. Brand recall but low scale post-COVID</span></div>
+          <div class="competitor-item"><span class="comp-name">Chalo</span><span class="comp-detail">Public transit tracking/ticketing</span></div>
+          <div class="competitor-item"><span class="comp-name">DTC / Cluster buses</span><span class="comp-detail">Govt. Improving AC bus fleet</span></div>
+          <div class="competitor-item"><span class="comp-name">Delhi Metro</span><span class="comp-detail">Strongest alternative. Dense coverage</span></div>
+        </div>
+      </div>
+      <div class="segment-box">
+        <h5 style="color:var(--purple);">B2B — Corporate Transport</h5>
+        <div class="competitors">
+          <div class="competitor-item cityflo-row"><span class="comp-name" style="color:var(--accent-light);">Cityflo Corporate</span><span class="comp-detail">Expanding in Gurugram/Noida</span></div>
+          <div class="competitor-item"><span class="comp-name">MoveInSync</span><span class="comp-detail">HQ here. Deepest NCR penetration</span></div>
+          <div class="competitor-item"><span class="comp-name">Routematic</span><span class="comp-detail">Targeting NCR aggressively post $40M raise</span></div>
+          <div class="competitor-item"><span class="comp-name">Commutec</span><span class="comp-detail">NCR-focused employee transport</span></div>
+          <div class="competitor-item"><span class="comp-name">Sea Hawk Travels</span><span class="comp-detail">Traditional fleet operator</span></div>
+        </div>
+      </div>
+      <div class="segment-box">
+        <h5 style="color:var(--cyan);">Cab Segment</h5>
+        <div class="competitors">
+          <div class="competitor-item cityflo-row"><span class="comp-name" style="color:var(--accent-light);">Cityflo Cab</span><span class="comp-detail">Corporate cabs + first/last mile</span></div>
+          <div class="competitor-item"><span class="comp-name">Ola</span><span class="comp-detail">Dominant consumer ride-hailing</span></div>
+          <div class="competitor-item"><span class="comp-name">Uber</span><span class="comp-detail">Strong in Gurugram corridors</span></div>
+          <div class="competitor-item"><span class="comp-name">Lithium Urban</span><span class="comp-detail">EV corporate cabs, major IT cos</span></div>
+          <div class="competitor-item"><span class="comp-name">BluSmart</span><span class="comp-detail">All-EV ride hailing (NCR origin)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="insight-box" style="margin-top:1rem;">
+      <h4>Delhi NCR Assessment</h4>
+      <p>Most competitive city. MoveInSync is headquartered here and deeply entrenched in B2B. Shuttl (Chalo) still has NCR brand recall. Delhi Metro is the strongest commute alternative. Cab market has BluSmart + Ola/Uber. Cityflo's EV bus launch (Aaveg partnership) is a differentiator but scale is early. <strong>Moat: Weak — needs aggressive investment.</strong></p>
+    </div>
+  </div>
+
+  <!-- HYDERABAD -->
+  <div class="city-section" style="border-left: 4px solid var(--purple);">
+    <div class="city-header">
+      <h3>Hyderabad</h3>
+      <div class="city-status">
+        <span class="badge badge-green">Active &middot; Established</span>
+        <span class="badge badge-blue">B2C</span>
+        <span class="badge badge-purple">B2B</span>
+        <span class="badge badge-cyan">Cab</span>
+      </div>
+    </div>
+
+    <div class="segment-grid">
+      <div class="segment-box">
+        <h5 style="color:var(--blue);">B2C — Premium Bus</h5>
+        <div class="competitors">
+          <div class="competitor-item cityflo-row"><span class="comp-name" style="color:var(--accent-light);">Cityflo</span><span class="comp-detail">Established. IT corridor focus</span></div>
+          <div class="competitor-item"><span class="comp-name">Commut</span><span class="comp-detail">AC minibus shuttle for offices</span></div>
+          <div class="competitor-item"><span class="comp-name">TGSRTC Premium</span><span class="comp-detail">Deluxe buses on IT corridor</span></div>
+          <div class="competitor-item"><span class="comp-name">Hyderabad Metro</span><span class="comp-detail">Covers major IT hubs</span></div>
+        </div>
+      </div>
+      <div class="segment-box">
+        <h5 style="color:var(--purple);">B2B — Corporate Transport</h5>
+        <div class="competitors">
+          <div class="competitor-item cityflo-row"><span class="comp-name" style="color:var(--accent-light);">Cityflo Corporate</span><span class="comp-detail">Growing in Hi-Tec City / Gachibowli</span></div>
+          <div class="competitor-item"><span class="comp-name">WhistleDrive</span><span class="comp-detail">₹47.5 Cr. HQ here. 200+ brands</span></div>
+          <div class="competitor-item"><span class="comp-name">MoveInSync</span><span class="comp-detail">Strong presence, major IT cos</span></div>
+          <div class="competitor-item"><span class="comp-name">Routematic</span><span class="comp-detail">Active in Hyd IT corridor</span></div>
+          <div class="competitor-item"><span class="comp-name">Rego</span><span class="comp-detail">Pan-India. Britania, Google etc.</span></div>
+        </div>
+      </div>
+      <div class="segment-box">
+        <h5 style="color:var(--cyan);">Cab Segment</h5>
+        <div class="competitors">
+          <div class="competitor-item cityflo-row"><span class="comp-name" style="color:var(--accent-light);">Cityflo Cab</span><span class="comp-detail">Corporate cabs for IT cos</span></div>
+          <div class="competitor-item"><span class="comp-name">Ola</span><span class="comp-detail">Market leader</span></div>
+          <div class="competitor-item"><span class="comp-name">Uber</span><span class="comp-detail">Strong in IT corridors</span></div>
+          <div class="competitor-item"><span class="comp-name">WhistleDrive</span><span class="comp-detail">Full-stack: cabs + buses + rentals</span></div>
+          <div class="competitor-item"><span class="comp-name">Lithium Urban</span><span class="comp-detail">EV corporate cabs</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="insight-box" style="margin-top:1rem;">
+      <h4>Hyderabad Assessment</h4>
+      <p>Strong B2C position around IT corridors (Hi-Tec City, Gachibowli, Financial District). Main B2B threat is WhistleDrive (hometown advantage, full-stack). TGSRTC expanding EV fleet (540+ e-buses) will impact premium bus demand long-term. Massive IT workforce = large addressable market. <strong>Moat: Medium — need to win more B2B before WhistleDrive/Routematic lock in IT cos.</strong></p>
+    </div>
+  </div>
+
+  <!-- PUNE -->
+  <div class="city-section" style="border-left: 4px solid var(--orange);">
+    <div class="city-header">
+      <h3>Pune</h3>
+      <div class="city-status">
+        <span class="badge badge-green">Active</span>
+        <span class="badge badge-blue">B2C</span>
+        <span class="badge badge-purple">B2B</span>
+        <span class="badge badge-cyan">Cab</span>
+      </div>
+    </div>
+
+    <div class="segment-grid">
+      <div class="segment-box">
+        <h5 style="color:var(--blue);">B2C — Premium Bus</h5>
+        <div class="competitors">
+          <div class="competitor-item cityflo-row"><span class="comp-name" style="color:var(--accent-light);">Cityflo</span><span class="comp-detail">Active. Hinjewadi / IT hubs</span></div>
+          <div class="competitor-item"><span class="comp-name">PMPML</span><span class="comp-detail">Govt buses. Poor quality but cheap</span></div>
+          <div class="competitor-item"><span class="comp-name">Pune Metro</span><span class="comp-detail">Limited coverage, expanding</span></div>
+          <div class="competitor-item"><span class="comp-name">No direct premium competitor</span><span class="comp-detail">White space for Cityflo</span></div>
+        </div>
+      </div>
+      <div class="segment-box">
+        <h5 style="color:var(--purple);">B2B — Corporate Transport</h5>
+        <div class="competitors">
+          <div class="competitor-item cityflo-row"><span class="comp-name" style="color:var(--accent-light);">Cityflo Corporate</span><span class="comp-detail">Active in Hinjewadi, Magarpatta</span></div>
+          <div class="competitor-item"><span class="comp-name">Routematic</span><span class="comp-detail">Strong. Connects Hinjewadi/EON IT Park</span></div>
+          <div class="competitor-item"><span class="comp-name">MoveInSync</span><span class="comp-detail">Present for large IT cos</span></div>
+          <div class="competitor-item"><span class="comp-name">Aleshwar Travels</span><span class="comp-detail">Unorganized. Large local fleet</span></div>
+          <div class="competitor-item"><span class="comp-name">Purple Mobility</span><span class="comp-detail">Shift-based routing, HR dashboard</span></div>
+        </div>
+      </div>
+      <div class="segment-box">
+        <h5 style="color:var(--cyan);">Cab Segment</h5>
+        <div class="competitors">
+          <div class="competitor-item cityflo-row"><span class="comp-name" style="color:var(--accent-light);">Cityflo Cab</span><span class="comp-detail">Corporate cabs</span></div>
+          <div class="competitor-item"><span class="comp-name">Ola</span><span class="comp-detail">Dominant. HQ nearby</span></div>
+          <div class="competitor-item"><span class="comp-name">Uber</span><span class="comp-detail">Strong presence</span></div>
+          <div class="competitor-item"><span class="comp-name">Lithium Urban</span><span class="comp-detail">EV cabs for corporates</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="insight-box" style="margin-top:1rem;">
+      <h4>Pune Assessment</h4>
+      <p>Huge opportunity. Hinjewadi alone has 500K+ IT professionals with terrible commute options (PMPML is unreliable). No direct premium bus competitor — Cityflo has white space for B2C dominance. B2B is contested by Routematic (strong in Pune) but market is underpenetrated. Pune's fragmented, Hinjewadi-bottleneck geography favors bus solutions. <strong>Moat: Early — first-mover advantage available.</strong></p>
+    </div>
+  </div>
+
+  <!-- CHENNAI -->
+  <div class="city-section" style="border-left: 4px solid var(--pink);">
+    <div class="city-header">
+      <h3>Chennai</h3>
+      <div class="city-status">
+        <span class="badge badge-green">Active</span>
+        <span class="badge badge-blue">B2C</span>
+        <span class="badge badge-purple">B2B</span>
+        <span class="badge badge-cyan">Cab</span>
+      </div>
+    </div>
+
+    <div class="segment-grid">
+      <div class="segment-box">
+        <h5 style="color:var(--blue);">B2C — Premium Bus</h5>
+        <div class="competitors">
+          <div class="competitor-item cityflo-row"><span class="comp-name" style="color:var(--accent-light);">Cityflo</span><span class="comp-detail">Active. OMR / IT corridor</span></div>
+          <div class="competitor-item"><span class="comp-name">MTC</span><span class="comp-detail">Govt. Dense network but low quality</span></div>
+          <div class="competitor-item"><span class="comp-name">Chennai Metro</span><span class="comp-detail">Expanding. Limited to core city</span></div>
+          <div class="competitor-item"><span class="comp-name">No direct premium competitor</span><span class="comp-detail">White space like Pune</span></div>
+        </div>
+      </div>
+      <div class="segment-box">
+        <h5 style="color:var(--purple);">B2B — Corporate Transport</h5>
+        <div class="competitors">
+          <div class="competitor-item cityflo-row"><span class="comp-name" style="color:var(--accent-light);">Cityflo Corporate</span><span class="comp-detail">OMR / Sholinganallur belt</span></div>
+          <div class="competitor-item"><span class="comp-name">Routematic</span><span class="comp-detail">Strong. Dedicated Chennai operations</span></div>
+          <div class="competitor-item"><span class="comp-name">Safetrax (MTAP)</span><span class="comp-detail">HQ in Chennai. 160+ enterprises</span></div>
+          <div class="competitor-item"><span class="comp-name">MoveInSync</span><span class="comp-detail">Present via large IT cos</span></div>
+          <div class="competitor-item"><span class="comp-name">Sri Annai / ECO Mobility</span><span class="comp-detail">Traditional fleet operators</span></div>
+        </div>
+      </div>
+      <div class="segment-box">
+        <h5 style="color:var(--cyan);">Cab Segment</h5>
+        <div class="competitors">
+          <div class="competitor-item cityflo-row"><span class="comp-name" style="color:var(--accent-light);">Cityflo Cab</span><span class="comp-detail">Corporate cabs OMR belt</span></div>
+          <div class="competitor-item"><span class="comp-name">Ola</span><span class="comp-detail">Dominant</span></div>
+          <div class="competitor-item"><span class="comp-name">Uber</span><span class="comp-detail">Strong in IT corridors</span></div>
+          <div class="competitor-item"><span class="comp-name">GK Tours</span><span class="comp-detail">Pan-India ETS, airport + corporate</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="insight-box" style="margin-top:1rem;">
+      <h4>Chennai Assessment</h4>
+      <p>OMR (IT Expressway) is a goldmine — worst traffic in India, massive IT workforce, terrible public transit. B2C premium bus has zero competition. B2B is contested by Safetrax (HQ here) and Routematic. The city's heavy manufacturing presence (Oragadam, Sriperumbudur) creates additional B2B demand for blue-collar transport. <strong>Moat: Early — huge untapped potential.</strong></p>
+    </div>
+  </div>
+
+  <!-- KOLKATA -->
+  <div class="city-section" style="border-left: 4px solid var(--yellow);">
+    <div class="city-header">
+      <h3>Kolkata</h3>
+      <div class="city-status">
+        <span class="badge badge-yellow">Upcoming</span>
+        <span class="badge badge-blue">B2C</span>
+        <span class="badge badge-purple">B2B</span>
+        <span class="badge badge-cyan">Cab</span>
+      </div>
+    </div>
+
+    <div class="segment-grid">
+      <div class="segment-box">
+        <h5 style="color:var(--blue);">B2C — Premium Bus</h5>
+        <div class="competitors">
+          <div class="competitor-item cityflo-row"><span class="comp-name" style="color:var(--accent-light);">Cityflo</span><span class="comp-detail">Planned launch</span></div>
+          <div class="competitor-item"><span class="comp-name">WBTC / SBSTC</span><span class="comp-detail">Govt buses. Crowded, unreliable</span></div>
+          <div class="competitor-item"><span class="comp-name">Kolkata Metro</span><span class="comp-detail">Limited coverage, expanding</span></div>
+          <div class="competitor-item"><span class="comp-name">No premium bus operator</span><span class="comp-detail">Complete white space</span></div>
+        </div>
+      </div>
+      <div class="segment-box">
+        <h5 style="color:var(--purple);">B2B — Corporate Transport</h5>
+        <div class="competitors">
+          <div class="competitor-item cityflo-row"><span class="comp-name" style="color:var(--accent-light);">Cityflo Corporate</span><span class="comp-detail">Planned — New Town / Sector V</span></div>
+          <div class="competitor-item"><span class="comp-name">Sea Hawk Travels</span><span class="comp-detail">Established fleet operator</span></div>
+          <div class="competitor-item"><span class="comp-name">Routematic</span><span class="comp-detail">Active in Kolkata</span></div>
+          <div class="competitor-item"><span class="comp-name">WTI Cabs</span><span class="comp-detail">Employee transport services</span></div>
+          <div class="competitor-item"><span class="comp-name">Rego</span><span class="comp-detail">Pan-India presence</span></div>
+        </div>
+      </div>
+      <div class="segment-box">
+        <h5 style="color:var(--cyan);">Cab Segment</h5>
+        <div class="competitors">
+          <div class="competitor-item cityflo-row"><span class="comp-name" style="color:var(--accent-light);">Cityflo Cab</span><span class="comp-detail">Planned</span></div>
+          <div class="competitor-item"><span class="comp-name">Ola</span><span class="comp-detail">Market leader</span></div>
+          <div class="competitor-item"><span class="comp-name">Uber</span><span class="comp-detail">Strong in Salt Lake / New Town</span></div>
+          <div class="competitor-item"><span class="comp-name">Local yellow cabs</span><span class="comp-detail">Iconic but unorganized</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="insight-box" style="margin-top:1rem;">
+      <h4>Kolkata Assessment</h4>
+      <p>Growing IT hub in New Town/Rajarhat and Sector V (Salt Lake). Public transit is chaotic — zero premium bus service. B2B is dominated by unorganized fleet operators. Lower per-capita spend than Mumbai/BLR but growing IT workforce. Key corridors: New Town → Park Street, Sector V → Howrah. <strong>Moat: Greenfield — first-mover takes all.</strong></p>
+    </div>
+  </div>
+
+  <!-- BENGALURU -->
+  <div class="city-section" style="border-left: 4px solid var(--red);">
+    <div class="city-header">
+      <h3>Bengaluru</h3>
+      <div class="city-status">
+        <span class="badge badge-yellow">Upcoming</span>
+        <span class="badge badge-blue">B2C</span>
+        <span class="badge badge-purple">B2B</span>
+        <span class="badge badge-cyan">Cab</span>
+      </div>
+    </div>
+
+    <div class="segment-grid">
+      <div class="segment-box">
+        <h5 style="color:var(--blue);">B2C — Premium Bus</h5>
+        <div class="competitors">
+          <div class="competitor-item cityflo-row"><span class="comp-name" style="color:var(--accent-light);">Cityflo</span><span class="comp-detail">Planned launch</span></div>
+          <div class="competitor-item"><span class="comp-name">BMTC Vajra (AC)</span><span class="comp-detail">Premium govt AC buses on IT routes</span></div>
+          <div class="competitor-item"><span class="comp-name">Namma Metro</span><span class="comp-detail">Expanding rapidly. Strong alternative</span></div>
+          <div class="competitor-item"><span class="comp-name">Chalo</span><span class="comp-detail">Tracking/ticketing for BMTC</span></div>
+        </div>
+      </div>
+      <div class="segment-box">
+        <h5 style="color:var(--purple);">B2B — Corporate Transport</h5>
+        <div class="competitors">
+          <div class="competitor-item cityflo-row"><span class="comp-name" style="color:var(--accent-light);">Cityflo Corporate</span><span class="comp-detail">Planned — Whitefield / ECity</span></div>
+          <div class="competitor-item"><span class="comp-name">Routematic</span><span class="comp-detail">1,000+ vehicles, 200+ EVs. Dominant</span></div>
+          <div class="competitor-item"><span class="comp-name">MoveInSync</span><span class="comp-detail">Deep penetration in large IT cos</span></div>
+          <div class="competitor-item"><span class="comp-name">Lithium Urban</span><span class="comp-detail">EV cabs, major corporate clients</span></div>
+          <div class="competitor-item"><span class="comp-name">KTC / Acciva</span><span class="comp-detail">Traditional fleet operators</span></div>
+        </div>
+      </div>
+      <div class="segment-box">
+        <h5 style="color:var(--cyan);">Cab Segment</h5>
+        <div class="competitors">
+          <div class="competitor-item cityflo-row"><span class="comp-name" style="color:var(--accent-light);">Cityflo Cab</span><span class="comp-detail">Planned</span></div>
+          <div class="competitor-item"><span class="comp-name">Ola</span><span class="comp-detail">HQ city. Dominant</span></div>
+          <div class="competitor-item"><span class="comp-name">Uber</span><span class="comp-detail">Strong across all corridors</span></div>
+          <div class="competitor-item"><span class="comp-name">Namma Yatri</span><span class="comp-detail">Open platform, growing fast</span></div>
+          <div class="competitor-item"><span class="comp-name">Rapido</span><span class="comp-detail">Auto/bike + expanding to cabs</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="insight-box" style="margin-top:1rem;">
+      <h4>Bengaluru Assessment</h4>
+      <p>India's IT capital = largest addressable market for corporate transport. BUT also the most competitive: Routematic (1,000+ vehicles here), MoveInSync, Lithium Urban all have deep roots. BMTC Vajra AC buses are reasonable. Namma Metro expanding. Cab market has Ola (HQ), Uber, Namma Yatri. Bengaluru's Whitefield/Sarjapur/Electronic City traffic nightmare creates massive commute pain = high willingness to pay. <strong>Moat: None yet — must compete on tech + price to break in.</strong></p>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- SECTION 4: CITY PRIORITY MATRIX -->
+  <!-- ============================================ -->
+  <h2 class="section-title">4. City Priority Matrix</h2>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>City</th>
+          <th>Status</th>
+          <th>B2C Competition</th>
+          <th>B2B Competition</th>
+          <th>Cab Competition</th>
+          <th>IT Workforce</th>
+          <th>Transit Pain</th>
+          <th>Cityflo Moat</th>
+          <th>Priority</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td>Mumbai</td>
+          <td><span class="badge badge-green">HQ</span></td>
+          <td style="color:var(--green);">Low</td>
+          <td style="color:var(--yellow);">High</td>
+          <td style="color:var(--red);">Very High</td>
+          <td>Large</td>
+          <td style="color:var(--red);">Extreme</td>
+          <td style="color:var(--green);">Strong</td>
+          <td><strong>Defend & Deepen</strong></td>
+        </tr>
+        <tr>
+          <td>Delhi NCR</td>
+          <td><span class="badge badge-blue">Active</span></td>
+          <td style="color:var(--yellow);">Medium</td>
+          <td style="color:var(--red);">Very High</td>
+          <td style="color:var(--red);">Very High</td>
+          <td>Very Large</td>
+          <td style="color:var(--red);">Extreme</td>
+          <td style="color:var(--red);">Weak</td>
+          <td><strong>Invest Heavily</strong></td>
+        </tr>
+        <tr>
+          <td>Hyderabad</td>
+          <td><span class="badge badge-green">Active</span></td>
+          <td style="color:var(--green);">Low</td>
+          <td style="color:var(--yellow);">High</td>
+          <td style="color:var(--yellow);">High</td>
+          <td>Large</td>
+          <td style="color:var(--orange);">High</td>
+          <td style="color:var(--yellow);">Medium</td>
+          <td><strong>Scale B2B</strong></td>
+        </tr>
+        <tr>
+          <td>Pune</td>
+          <td><span class="badge badge-green">Active</span></td>
+          <td style="color:var(--green);">Very Low</td>
+          <td style="color:var(--yellow);">Medium</td>
+          <td style="color:var(--yellow);">High</td>
+          <td>Large (Hinjewadi)</td>
+          <td style="color:var(--red);">Extreme</td>
+          <td style="color:var(--yellow);">Early</td>
+          <td><strong>Dominate B2C</strong></td>
+        </tr>
+        <tr>
+          <td>Chennai</td>
+          <td><span class="badge badge-green">Active</span></td>
+          <td style="color:var(--green);">Very Low</td>
+          <td style="color:var(--yellow);">High</td>
+          <td style="color:var(--yellow);">High</td>
+          <td>Large (OMR)</td>
+          <td style="color:var(--red);">Extreme</td>
+          <td style="color:var(--yellow);">Early</td>
+          <td><strong>Dominate B2C</strong></td>
+        </tr>
+        <tr>
+          <td>Kolkata</td>
+          <td><span class="badge badge-yellow">Upcoming</span></td>
+          <td style="color:var(--green);">None</td>
+          <td style="color:var(--green);">Low</td>
+          <td style="color:var(--yellow);">Medium</td>
+          <td>Growing</td>
+          <td style="color:var(--orange);">High</td>
+          <td style="color:var(--green);">Greenfield</td>
+          <td><strong>First-Mover</strong></td>
+        </tr>
+        <tr>
+          <td>Bengaluru</td>
+          <td><span class="badge badge-yellow">Upcoming</span></td>
+          <td style="color:var(--yellow);">Medium</td>
+          <td style="color:var(--red);">Very High</td>
+          <td style="color:var(--red);">Very High</td>
+          <td>Largest in India</td>
+          <td style="color:var(--red);">Extreme</td>
+          <td style="color:var(--red);">None</td>
+          <td><strong>Must-Win</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- SECTION 5: SEGMENT-WISE REVENUE COMPARISON -->
+  <!-- ============================================ -->
+  <h2 class="section-title">5. Revenue — Segment-wise Competitor Scale</h2>
+
+  <h3 class="sub-title">B2B Corporate Transport — Revenue Comparison</h3>
+  <div class="bar-chart">
+    <div class="bar-row">
+      <div class="bar-label">MoveInSync</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:100%; background: linear-gradient(90deg, #dc2626, #f87171);">₹548 Cr</div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Routematic</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:32.6%; background: linear-gradient(90deg, #d97706, #fbbf24);">₹179 Cr</div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Lithium Urban</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:29.7%; background: linear-gradient(90deg, #059669, #34d399);">₹163 Cr</div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label" style="color:var(--accent-light);">Cityflo</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:15.2%; background: linear-gradient(90deg, var(--accent), var(--purple));">₹83.4 Cr (all segs)</div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">WhistleDrive</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:8.6%; background: linear-gradient(90deg, #7c3aed, #a78bfa);">₹47.5 Cr</div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Safetrax</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:2.9%; background: linear-gradient(90deg, #0891b2, #22d3ee);">₹15.8 Cr</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>The B2B gap is stark.</strong> MoveInSync at ₹548 Cr is 6.5x Cityflo's total revenue (across all segments). Routematic just raised $40M to accelerate. To compete seriously in B2B corporate transport, Cityflo either needs significant investment or must differentiate by bundling bus+cab as a single-vendor solution — something no competitor currently does.
+  </div>
+
+  <h3 class="sub-title">B2C Bus — Revenue Comparison</h3>
+  <div class="bar-chart">
+    <div class="bar-row">
+      <div class="bar-label">NueGo</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:100%; background: linear-gradient(90deg, #059669, #34d399);">₹291 Cr (intercity)</div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Chalo</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:49.8%; background: linear-gradient(90deg, #2563eb, #60a5fa);">~₹145 Cr (public transit)</div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label" style="color:var(--accent-light);">Cityflo</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:28.6%; background: linear-gradient(90deg, var(--accent), var(--purple));">₹83.4 Cr (premium commute)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- SECTION 6: COST & OPERATIONS -->
+  <!-- ============================================ -->
+  <h2 class="section-title">6. Operations Cost — By Segment</h2>
+
+  <div class="cost-grid">
+    <div class="cost-card">
+      <h4 style="color:var(--blue);">B2C Bus — Cityflo Model</h4>
+      <div class="cost-item"><span class="cost-label">Operator payout (profit share)</span><span class="cost-value">45–55% of revenue</span></div>
+      <div class="cost-item"><span class="cost-label">Fuel / maintenance</span><span class="cost-value">Borne by operator</span></div>
+      <div class="cost-item"><span class="cost-label">Driver costs</span><span class="cost-value">Borne by operator</span></div>
+      <div class="cost-item"><span class="cost-label">Tech platform + AI routing</span><span class="cost-value">12–15%</span></div>
+      <div class="cost-item"><span class="cost-label">Marketing + CAC</span><span class="cost-value">8–12%</span></div>
+      <div class="cost-item"><span class="cost-label">City ops team</span><span class="cost-value">10–15%</span></div>
+      <div class="cost-item" style="border-top:2px solid var(--blue); margin-top:.4rem; padding-top:.5rem;">
+        <span class="cost-label" style="color:var(--text); font-weight:700;">Est. Contribution Margin</span>
+        <span class="cost-value" style="color:var(--green);">15–25%</span>
+      </div>
+    </div>
+
+    <div class="cost-card">
+      <h4 style="color:var(--purple);">B2B Corporate — Cityflo Model</h4>
+      <div class="cost-item"><span class="cost-label">Fleet operator / driver payout</span><span class="cost-value">50–60% of contract</span></div>
+      <div class="cost-item"><span class="cost-label">Account management</span><span class="cost-value">5–8%</span></div>
+      <div class="cost-item"><span class="cost-label">Tech platform (MIS, tracking)</span><span class="cost-value">8–10%</span></div>
+      <div class="cost-item"><span class="cost-label">Sales + BD</span><span class="cost-value">8–12%</span></div>
+      <div class="cost-item"><span class="cost-label">Operations + compliance</span><span class="cost-value">5–8%</span></div>
+      <div class="cost-item" style="border-top:2px solid var(--purple); margin-top:.4rem; padding-top:.5rem;">
+        <span class="cost-label" style="color:var(--text); font-weight:700;">Est. Contribution Margin</span>
+        <span class="cost-value" style="color:var(--green);">12–20%</span>
+      </div>
+    </div>
+
+    <div class="cost-card">
+      <h4 style="color:var(--cyan);">Cab Segment — Cityflo Model</h4>
+      <div class="cost-item"><span class="cost-label">Driver + vehicle payout</span><span class="cost-value">65–75% of fare</span></div>
+      <div class="cost-item"><span class="cost-label">Tech platform + dispatch</span><span class="cost-value">5–8%</span></div>
+      <div class="cost-item"><span class="cost-label">Customer support</span><span class="cost-value">3–5%</span></div>
+      <div class="cost-item"><span class="cost-label">Marketing + acquisition</span><span class="cost-value">5–10%</span></div>
+      <div class="cost-item"><span class="cost-label">Insurance + compliance</span><span class="cost-value">3–5%</span></div>
+      <div class="cost-item" style="border-top:2px solid var(--cyan); margin-top:.4rem; padding-top:.5rem;">
+        <span class="cost-label" style="color:var(--text); font-weight:700;">Est. Contribution Margin</span>
+        <span class="cost-value" style="color:var(--yellow);">5–15%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="insight-box">
+    <h4>Segment Margin Hierarchy</h4>
+    <p><strong>B2C Bus (15–25%)</strong> > <strong>B2B Corporate (12–20%)</strong> > <strong>Cab (5–15%)</strong>. B2C bus has the best margins because AI-optimized occupancy spreads fixed operator costs across more seats. B2B is margin-compressed by enterprise negotiation power. Cab is thin-margin by nature — but it serves as the glue connecting bus + corporate offerings into a full-stack solution. The real play is bundled contracts where corporates buy bus + cab from Cityflo as one vendor — this is Cityflo's unique wedge vs. pure-play competitors.</p>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- SECTION 7: SWOT (UPDATED) -->
+  <!-- ============================================ -->
+  <h2 class="section-title">7. SWOT — Cityflo (All Segments, All Cities)</h2>
+
+  <div class="swot-grid">
+    <div class="swot-box swot-s">
+      <h4>Strengths</h4>
+      <ul>
+        <li><strong>Only multi-segment player:</strong> Bus + B2B Corporate + Cab under one platform — unique positioning vs single-segment competitors</li>
+        <li><strong>Capital efficiency:</strong> ₹83 Cr revenue on $14.7M funding — best in class</li>
+        <li><strong>5-city active footprint:</strong> Mumbai, Delhi, Hyderabad, Pune, Chennai with 2 more upcoming</li>
+        <li><strong>AI route optimization:</strong> 40% cost savings claim, 99.99% uptime</li>
+        <li><strong>Asset-light:</strong> Zero fleet capex in bus segment; operator partnerships</li>
+        <li><strong>B2B traction:</strong> 30+ enterprise clients (ICICI, Pfizer, Tata, L'Oreal, PayPal)</li>
+        <li><strong>B2G entry:</strong> Urban Glide JV for 500 EV buses in MMR</li>
+        <li><strong>Mumbai dominance:</strong> Strongest premium bus brand in India's richest city</li>
+      </ul>
+    </div>
+
+    <div class="swot-box swot-w">
+      <h4>Weaknesses</h4>
+      <ul>
+        <li><strong>B2B revenue gap:</strong> MoveInSync is 6.5x larger; Routematic just raised $40M</li>
+        <li><strong>Cab segment margins:</strong> Thin (5–15%) and facing Ola/Uber price war</li>
+        <li><strong>No presence in BLR:</strong> India's largest IT market — competitors deeply entrenched</li>
+        <li><strong>Operator dependency:</strong> Bus quality and reliability controlled by partners</li>
+        <li><strong>Off-peak utilization:</strong> Buses idle 8+ hrs/day across all cities</li>
+        <li><strong>Limited funding ($14.7M):</strong> Vs MoveInSync (well-funded), Routematic ($40M), Chalo ($176M)</li>
+        <li><strong>Pune & Chennai early:</strong> Active but not yet scaled or profitable in these cities</li>
+        <li><strong>No EV cabs:</strong> Lithium Urban has 2,400+ EVs; Cityflo cab fleet is conventional</li>
+      </ul>
+    </div>
+
+    <div class="swot-box swot-o">
+      <h4>Opportunities</h4>
+      <ul>
+        <li><strong>Bundle advantage:</strong> Only player offering bus + cab + corporate as single vendor = procurement simplicity</li>
+        <li><strong>Pune & Chennai B2C:</strong> Zero premium bus competition — can own these cities</li>
+        <li><strong>Kolkata greenfield:</strong> No organized player; growing IT workforce in New Town</li>
+        <li><strong>Bengaluru mega-market:</strong> Worst commute in India + largest IT workforce = highest willingness to pay</li>
+        <li><strong>Urban Glide B2G:</strong> ₹1 lakh Cr bus sector, GCC model = recurring revenue</li>
+        <li><strong>EV transition:</strong> Govt subsidies (FAME III) reduce fleet cost; green positioning for ESG-focused corporates</li>
+        <li><strong>Off-peak unlock:</strong> School transport, event shuttles, airport transfers = 20–30% unit economics improvement</li>
+        <li><strong>Corporate ETS market:</strong> $5B+ in India, growing 8.2% CAGR through 2030</li>
+      </ul>
+    </div>
+
+    <div class="swot-box swot-t">
+      <h4>Threats</h4>
+      <ul>
+        <li><strong>MoveInSync lock-in:</strong> 112 Fortune 500 clients → hard to displace in B2B</li>
+        <li><strong>Routematic's $40M war chest:</strong> Expanding to exactly Cityflo's cities (PUN, CHN, HYD, DEL)</li>
+        <li><strong>Govt transit improvement:</strong> BEST (2,100 EV buses), BMTC Vajra, TGSRTC upgrading AC fleets</li>
+        <li><strong>Metro expansion:</strong> Mumbai, Bengaluru, Hyderabad metros expanding to IT corridors</li>
+        <li><strong>Ola/Uber:</strong> Could enter premium shuttle/corporate segment with massive user bases</li>
+        <li><strong>Namma Yatri / open platforms:</strong> Zero-commission models disrupting cab segment (BLR)</li>
+        <li><strong>Operator disintermediation:</strong> Partners could build own apps or work with multiple platforms</li>
+        <li><strong>Economic slowdown:</strong> IT layoffs / office space reduction → commute demand drops</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- SECTION 8: STRATEGIC RECOMMENDATIONS -->
+  <!-- ============================================ -->
+  <h2 class="section-title">8. Strategic Recommendations — By City & Segment</h2>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Priority</th>
+          <th>Action</th>
+          <th>City</th>
+          <th>Segment</th>
+          <th>Rationale</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td>P0</td>
+          <td><strong>Defend Mumbai dominance</strong></td>
+          <td>Mumbai</td>
+          <td>All 3</td>
+          <td>HQ market. BEST EV buses threaten B2C moat. Deepen corporate relationships. Lock in B2B contracts before competitors</td>
+        </tr>
+        <tr>
+          <td>P1</td>
+          <td><strong>Dominate Pune & Chennai B2C</strong></td>
+          <td>PUN, CHN</td>
+          <td>B2C Bus</td>
+          <td>Zero premium bus competitors. Hinjewadi and OMR are the worst commute corridors in India. First-mover wins</td>
+        </tr>
+        <tr>
+          <td>P1</td>
+          <td><strong>Launch Bengaluru aggressively</strong></td>
+          <td>BLR</td>
+          <td>All 3</td>
+          <td>Can't ignore India's largest IT market. Must differentiate on bus+cab bundle. Target Whitefield, Electronic City, Sarjapur</td>
+        </tr>
+        <tr>
+          <td>P2</td>
+          <td><strong>Bundle bus+cab for B2B</strong></td>
+          <td>All cities</td>
+          <td>B2B + Cab</td>
+          <td>Unique wedge vs MoveInSync (no buses) and Chalo (no cabs). Single vendor = procurement simplicity for corporates</td>
+        </tr>
+        <tr>
+          <td>P2</td>
+          <td><strong>Invest heavily in Delhi NCR</strong></td>
+          <td>Delhi</td>
+          <td>B2B + Cab</td>
+          <td>Largest corporate market. MoveInSync HQ here. Need to win Gurugram corporates. EV buses (Aaveg) as differentiator</td>
+        </tr>
+        <tr>
+          <td>P2</td>
+          <td><strong>Win Hyderabad B2B before WhistleDrive locks in</strong></td>
+          <td>HYD</td>
+          <td>B2B</td>
+          <td>WhistleDrive is hometown competitor. IT corridor is booming. Target Hi-Tec City / Financial District corporates</td>
+        </tr>
+        <tr>
+          <td>P3</td>
+          <td><strong>Kolkata first-mover launch</strong></td>
+          <td>KOL</td>
+          <td>B2C + B2B</td>
+          <td>Complete white space. Lower cost city = lean launch. Target New Town / Sector V IT hubs</td>
+        </tr>
+        <tr>
+          <td>P3</td>
+          <td><strong>Build EV cab fleet</strong></td>
+          <td>All cities</td>
+          <td>Cab</td>
+          <td>Lithium Urban has 2,400+ EVs. ESG-conscious corporates increasingly demand EV transport. Start with Mumbai</td>
+        </tr>
+        <tr>
+          <td>P3</td>
+          <td><strong>Solve off-peak utilization</strong></td>
+          <td>All cities</td>
+          <td>B2C Bus</td>
+          <td>Biggest cost leak. School transport + event shuttles + airport transfers. Even 1 extra trip/bus/day = 20% economics lift</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- SECTION 9: DATA GAPS -->
+  <!-- ============================================ -->
+  <h2 class="section-title">9. Data Gaps — Need Your Input</h2>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Data Point</th>
+          <th>Why It Matters</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>City-wise revenue breakdown (MUM/DEL/HYD/PUN/CHN)</td><td>Which cities are profitable vs investing</td><td><span class="badge badge-red">Missing</span></td></tr>
+        <tr><td>2</td><td>B2C vs B2B vs Cab revenue split</td><td>Segment-level profitability</td><td><span class="badge badge-red">Missing</span></td></tr>
+        <tr><td>3</td><td>Cab fleet size + vehicle type (EV vs conventional)</td><td>Cab segment competitive positioning</td><td><span class="badge badge-red">Missing</span></td></tr>
+        <tr><td>4</td><td>Actual operator payout / cost per bus per day by city</td><td>True margin analysis</td><td><span class="badge badge-red">Missing</span></td></tr>
+        <tr><td>5</td><td>Number of buses per city</td><td>City-level fleet scale comparison</td><td><span class="badge badge-red">Missing</span></td></tr>
+        <tr><td>6</td><td>B2B client list per city + contract sizes</td><td>Revenue concentration risk</td><td><span class="badge badge-red">Missing</span></td></tr>
+        <tr><td>7</td><td>Occupancy rate by city and segment</td><td>Unit economics validation</td><td><span class="badge badge-red">Missing</span></td></tr>
+        <tr><td>8</td><td>Daily active riders per city</td><td>Market penetration depth</td><td><span class="badge badge-red">Missing</span></td></tr>
+        <tr><td>9</td><td>Cab rides per day + avg fare</td><td>Cab segment unit economics</td><td><span class="badge badge-red">Missing</span></td></tr>
+        <tr><td>10</td><td>BLR & KOL launch timeline + planned fleet</td><td>Expansion strategy validation</td><td><span class="badge badge-red">Missing</span></td></tr>
+        <tr><td>11</td><td>Churn rate by segment (B2C / B2B / Cab)</td><td>Customer lifetime value</td><td><span class="badge badge-red">Missing</span></td></tr>
+        <tr><td>12</td><td>Urban Glide economics — GCC terms, per-km rate</td><td>B2G margin potential</td><td><span class="badge badge-red">Missing</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="insight-box">
+    <h4>Next Steps</h4>
+    <p>This covers the <strong>Operations</strong> dimension across all 3 segments and 7 cities. Once you share internal data from the gaps table above, I can refine estimates with real numbers. After operations, we can expand to: <strong>Product & Tech</strong>, <strong>Go-to-Market & Growth</strong>, <strong>Team & Talent</strong>, <strong>Financial Health</strong>, <strong>Customer Experience</strong>, and <strong>Market Positioning</strong>.</p>
+  </div>
+
+  <div class="footer">
+    <p>Cityflo Competitive Analysis — Operations (City-wise, 3-Segment) &middot; March 2026</p>
+    <p style="margin-top:.5rem;">Sources: Tracxn, Crunchbase, PitchBook, Lightbox VC, Inc42, Autocar Professional, Mordor Intelligence, Company press releases</p>
+    <p style="margin-top:.5rem; opacity:.5;">Estimated figures based on industry benchmarks and public data. Validate with internal metrics.</p>
+  </div>
+
+</div>
+
+</body>
+</html>
